@@ -37,6 +37,11 @@ class INSERT extends QB
     $this->indAssoc = false;
   }
 
+  public function __toString()
+  {
+    return $this->getQuery();
+  }
+
   public function __set(string $column, $value): void
   {
     $this->set($column, $value);
@@ -83,6 +88,15 @@ class INSERT extends QB
 
     $this->pendingRows[] = $row;
     $this->numPendingRows += 1;
+
+    return $this;
+  }
+
+  public function addRows(array $rows): self
+  {
+    foreach ($rows as $row) {
+      $this->addRow($row);
+    }
 
     return $this;
   }
