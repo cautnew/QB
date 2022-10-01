@@ -40,6 +40,11 @@ class SELECT extends QB
     }
   }
 
+  public function __toString()
+  {
+    return $this->getQuery();
+  }
+
   public static function whereBetween(string $columnName, string $valueFrom, string $valueTo): string
   {
     if (empty($columnName) || empty($valueFrom) || empty($valueTo)) {
