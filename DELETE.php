@@ -8,7 +8,7 @@ use Exception;
 
 class DELETE extends QB
 {
-  protected $table;
+  protected string $table;
 
   protected ?string $tableAlias;
   protected string $sql;
@@ -24,7 +24,7 @@ class DELETE extends QB
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
-  public function __construct(?string $table = null, ?string $alias = null)
+  public function __construct(null | string $table = null, null | string $alias = null)
   {
     if (!empty($table)) {
       $this->from($table, $alias);
@@ -255,22 +255,6 @@ class DELETE extends QB
     return $this;
   }
 
-  private function renderFrom(): void
-  {
-    $this->commands[] = 'FROM';
-
-    if (gettype($this->table) === 'string') {
-      $this->commands[] = $this->table;
-    } else {
-      $table = $this->table->render()->getQuery();
-      $this->commands[] = "({$table})";
-    }
-
-    if (!empty($this->tableAlias)) {
-      $this->commands[] = $this->tableAlias;
-    }
-  }
-
   private function renderJoins(): void
   {
     if (empty($this->joins)) {
@@ -331,11 +315,8 @@ class DELETE extends QB
 
   public function render(): self
   {
-    $this->commands = [];
+    $this->commands = ['DELETE', $this->table];
 
-    $this->commands[] = 'DELETE';
-
-    $this->renderFrom();
     $this->renderJoins();
     $this->renderWhereClause();
     $this->renderOrderByClause();

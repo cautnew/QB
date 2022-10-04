@@ -33,7 +33,7 @@ class SELECT extends QB
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
-  public function __construct(?string $table = null, ?string $alias = null)
+  public function __construct(null | string $table = null, null | string $alias = null)
   {
     if (!empty($table)) {
       $this->from($table, $alias);
@@ -455,9 +455,18 @@ class SELECT extends QB
     $this->commands[] = 'FROM';
 
     if (gettype($this->table) === 'string') {
+      if (empty($this->table)) {
+        throw new Exception("Table name is not set.");
+      }
+
       $this->commands[] = $this->table;
     } else {
       $table = $this->table->render()->getQuery();
+
+      if (empty($this->table)) {
+        throw new Exception("Table is not set.");
+      }
+
       $this->commands[] = "({$table})";
     }
 
