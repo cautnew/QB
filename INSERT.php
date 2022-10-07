@@ -62,6 +62,13 @@ class INSERT extends QB
     return $this;
   }
 
+  public function setColumns(array $columns): self
+  {
+    $this->columns = $columns;
+
+    return $this;
+  }
+
   public function setLimitPendingRows(int $limit): self
   {
     if ($limit < 1) {
