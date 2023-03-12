@@ -12,6 +12,5 @@
       "role": "Back-End Developer"
     }
   ],
-  "minimum-stability": "stable",
-  "require": {}
+  "minimum-stability": "stable"
 }
