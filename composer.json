@@ -1,5 +1,5 @@
 {
-  "name": "cautnew/QB",
+  "name": "cautnew/qb",
   "version": "0.3",
   "description": "Class to create SQL queries in a easy way",
   "type": "library",
