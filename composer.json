@@ -1,7 +1,9 @@
 {
   "name": "cautnew/QB",
-  "description": "Class to create queries in a easy way",
-  "minimum-stability": "stable",
+  "version": "0.3.0",
+  "description": "Class to create SQL queries in a easy way",
+  "type": "library",
+  "license": "MIT",
   "authors": [
     {
       "name": "Felipe Martins",
@@ -9,5 +11,7 @@
       "homepage": "http://www.cautnew.com.br",
       "role": "Back-End Developer"
     }
-  ]
+  ],
+  "minimum-stability": "stable",
+  "require": {}
 }
