@@ -1,0 +1,13 @@
+{
+  "name": "cautnew/QB",
+  "description": "Class to create queries in a easy way",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Felipe Martins",
+      "email": "felipedesmartins@gmail.com",
+      "homepage": "http://www.cautnew.com.br",
+      "role": "Back-End Developer"
+    }
+  ]
+}
