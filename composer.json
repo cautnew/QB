@@ -4,6 +4,11 @@
   "description": "Class to create SQL queries in a easy way",
   "type": "library",
   "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "QB\\": "src/"
+    }
+  },
   "authors": [
     {
       "name": "Felipe Martins",
@@ -12,5 +17,5 @@
       "role": "Back-End Developer"
     }
   ],
-  "minimum-stability": "stable"
+  "minimum-stability": "dev"
 }
