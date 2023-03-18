@@ -19,7 +19,7 @@ class SELECT extends QB
   protected ?array $with = [];
   protected ?array $columns = [];
   protected ?array $columnsAggregated = [];
-  protected ?array $joins = [];
+  protected array $joins = [];
   protected ?array $having = [];
   protected ?array $orderBy = [];
   protected ?int $limit;
