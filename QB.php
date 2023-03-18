@@ -2,7 +2,7 @@
 
 namespace Cautnew\QB;
 
-use Conn\DB;
+use Core\Conn\DB;
 use PDO;
 use PDOStatement;
 
