@@ -1,8 +1,8 @@
 <?php
 
-namespace Conn\QB;
+namespace Cautnew\QB;
 
-use Conn\QB\QB;
+use Cautnew\QB\QB;
 use PDO;
 use Exception;
 

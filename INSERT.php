@@ -1,6 +1,6 @@
 <?php
 
-namespace Conn\QB;
+namespace Cautnew\QB;
 
 use Exception;
 

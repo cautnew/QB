@@ -1,12 +1,12 @@
 <?php
 
-namespace Conn\QB;
+namespace Cautnew\QB;
 
-use Conn\QB\QB;
+use Cautnew\QB\QB;
 use PDO;
 use Exception;
 
-class DELETE extends QB
+class UPDATE extends QB
 {
   protected string $table;
 
@@ -16,19 +16,30 @@ class DELETE extends QB
   protected ?array $orderBy = [];
   protected ?int $limit;
   protected ?array $conditions = [];
+  protected array $setList = [];
 
   protected ?int $maxExecutionTime = null;
   
-  const PERMITTED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'OUTTER', 'NATURAL'];
   const PERMITTED_COND_CONNECTORS = ['AND', 'OR'];
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
-  public function __construct(null | string $table = null, null | string $alias = null)
+  public function __construct(?string $table = null)
   {
     if (!empty($table)) {
-      $this->from($table, $alias);
+      $this->from($table);
     }
+  }
+
+  public function __set($item, $value)
+  {
+    $this->addSetItem($item, $value);
+    return $this;
+  }
+
+  public function __get($item)
+  {
+    return $this->setList[$item];
   }
 
   public function __toString()
@@ -71,18 +82,17 @@ class DELETE extends QB
     return "{$columnName} IN({$items})";
   }
 
-  public function from(string $table, ?string $alias = null): self
+  public function from(string $table): self
   {
     $this->table = $table;
-    $this->tableAlias = $alias;
     $this->indRendered = false;
 
     return $this;
   }
 
-  public function setTableName(string $table, ?string $alias = null): self
+  public function setTableName(string $table): self
   {
-    return $this->from($table, $alias);
+    return $this->from($table);
   }
 
   public function setMaxExecutionTime(int $time): self
@@ -95,60 +105,6 @@ class DELETE extends QB
     }
 
     $this->maxExecutionTime = $time;
-
-    return $this;
-  }
-
-  public function join(string $type, $table, ?string $alias): self
-  {
-    $type = strtoupper(trim($type));
-
-    if (!in_array($type, self::PERMITTED_JOIN_TYPES)) {
-      throw new Exception("Join type not recognized.");
-    }
-
-    $this->joins[$alias] = [
-      "type" => $type,
-      "table" => $table,
-      "alias" => $alias
-    ];
-
-    $this->indRendered = false;
-
-    return $this;
-  }
-
-  public function innerJoin($table, ?string $alias): self
-  {
-    return $this->join('INNER', $table, $alias);
-  }
-
-  public function leftJoin($table, ?string $alias): self
-  {
-    return $this->join('LEFT', $table, $alias);
-  }
-
-  public function rightJoin($table, ?string $alias): self
-  {
-    return $this->join('RIGHT', $table, $alias);
-  }
-
-  public function outterJoin($table, ?string $alias): self
-  {
-    return $this->join('OUTTER', $table, $alias);
-  }
-
-  public function naturalJoin($table, ?string $alias): self
-  {
-    return $this->join('NATURAL', $table, $alias, null);
-  }
-
-  public function removeJoin(string $alias): self
-  {
-    if (isset($this->joins[$alias])) {
-      unset($this->joins[$alias]);
-      $this->indRendered = false;
-    }
 
     return $this;
   }
@@ -231,6 +187,28 @@ class DELETE extends QB
     return $this->addConditionOr($conditions);
   }
 
+  public function addSetItem(string $item, string $value): self
+  {
+    if (empty($item)) {
+      return $this;
+    }
+
+    $this->setList[$item] = $value;
+
+    return $this;
+  }
+
+  public function addSetList(array $setList): self
+  {
+    if (empty($setList)) {
+      return $this;
+    }
+
+    $this->setList = $setList;
+
+    return $this;
+  }
+
   public function orderBy(array $listOrderBy): self
   {
     foreach ($listOrderBy as $orderBy) {
@@ -255,26 +233,19 @@ class DELETE extends QB
     return $this;
   }
 
-  private function renderJoins(): void
+  private function renderSetList(): void
   {
-    if (empty($this->joins)) {
-      return;
+    if (empty($this->conditions)) {
+      throw new Exception('Nothing to change.');
     }
 
-    foreach ($this->joins as $join) {
-      $this->commands[] = $join["type"] . " JOIN";
+    $this->commands[] = 'SET';
 
-      if (gettype($join["table"]) === 'string') {
-        $this->commands[] = $join["table"];
-      } else {
-        $table = $join["table"]->render()->getQuery();
-        $this->commands[] = "({$table})";
-      }
-
-      if (!empty($join["alias"])) {
-        $this->commands[] = $join["alias"];
-      }
+    foreach ($this->setList as $item => $value) {
+      $this->commands[] = "{$item}={$value},";
     }
+
+    $this->removeCommonsLastCommand();
   }
 
   private function renderWhereClause(): void
@@ -315,9 +286,9 @@ class DELETE extends QB
 
   public function render(): self
   {
-    $this->commands = ['DELETE', $this->table];
+    $this->commands = ['UPDATE', $this->table];
 
-    $this->renderJoins();
+    $this->renderSetList();
     $this->renderWhereClause();
     $this->renderOrderByClause();
     $this->renderLimitClause();

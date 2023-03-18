@@ -1,6 +1,6 @@
 <?php
 
-namespace Conn\QB;
+namespace Cautnew\QB;
 
 use Conn\DB;
 use PDO;
@@ -11,8 +11,10 @@ class QB extends DB
   private PDO $con;
   private PDOStatement $stmt;
   private array $params;
+  private string $sql;
 
   protected array $commands = [];
+  protected array $joins = [];
 
   protected bool $indRendered = false;
 
