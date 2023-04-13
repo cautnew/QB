@@ -21,8 +21,6 @@ class INSERT extends QB
 
   protected string $callableOnFlush;
 
-  protected bool $indAssoc;
-
   protected const COLUMN_SEPARATOR = ',';
 
   public function __construct(null | string $table = null)
@@ -33,8 +31,6 @@ class INSERT extends QB
 
     $this->pendingRow = [];
     $this->pendingRows = [];
-
-    $this->indAssoc = false;
   }
 
   public function __toString()
@@ -50,10 +46,6 @@ class INSERT extends QB
   public function set(string $column, $value): self
   {
     $this->pendingRow[$column] = $value;
-
-    if (!$this->indAssoc) {
-      return $this;
-    }
 
     if (!in_array($column, $this->columns)) {
       $this->columns[] = $column;
@@ -76,13 +68,6 @@ class INSERT extends QB
     }
 
     $this->limitPendingRows = $limit;
-
-    return $this;
-  }
-
-  public function indAssoc(bool $indAssoc = true): self
-  {
-    $this->indAssoc = $indAssoc;
 
     return $this;
   }
@@ -167,36 +152,12 @@ class INSERT extends QB
 
   private function joinValuesToCommands(array $row): void
   {
-    if ($this->indAssoc) {
-      array_walk($row, function(&$value) {
-        $value = ($value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
-      });
-    } else {
-      array_walk($row, function(&$value) {
-        $value = ($value === null) ? 'NULL' : "'{$value}'";
-      });
-    }
+    array_walk($row, function(&$value) {
+      $value = ($value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
+    });
 
     $joinedColumns = implode(self::COLUMN_SEPARATOR, $row);
     $this->commands[] = "({$joinedColumns}),";
-  }
-
-  private function renderRowsAssoc(): void
-  {
-    foreach($this->pendingRows as $row) {
-      $row = array_combine_keys($this->columns, $row);
-
-      $this->joinValuesToCommands($row);
-    }
-  }
-
-  private function renderRowsNormal(): void
-  {
-    foreach($this->pendingRows as $row) {
-      $values = array_values($row);
-
-      $this->joinValuesToCommands($values);
-    }
   }
 
   private function renderRows(): void
@@ -205,11 +166,6 @@ class INSERT extends QB
 
     $this->commands[] = 'VALUES';
 
-    /*if ($this->indAssoc) {
-      $this->renderRowsAssoc();
-    } else {
-      $this->renderRowsNormal();
-    }*/
     foreach($this->pendingRows as $row) {
       $values = array_values($row);
 
