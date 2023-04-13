@@ -25,6 +25,7 @@ class INSERT extends QB
 
   public function __construct(null | string $table = null)
   {
+    parent::__construct();
     if (!empty($table)) {
       $this->table($table);
     }

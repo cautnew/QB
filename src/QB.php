@@ -2,11 +2,10 @@
 
 namespace Cautnew\QB;
 
-use Core\Conn\DB;
 use PDO;
 use PDOStatement;
 
-class QB extends DB
+class QB
 {
   private PDO $con;
   private PDOStatement $stmt;
@@ -17,6 +16,14 @@ class QB extends DB
   protected array $joins = [];
 
   protected bool $indRendered = false;
+
+  public function __construct(PDO | null $con = null) {
+    $this->sql = '';
+
+    if ($con !== null) {
+      $this->setConn($con);
+    }
+  }
 
   protected function removeCommonsLastCommand(): void
   {
