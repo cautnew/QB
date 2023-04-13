@@ -153,11 +153,11 @@ class INSERT extends QB
   private function joinValuesToCommands(array $row): void
   {
     array_walk($row, function(&$value) {
-      $value = ($value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
+      $value = (empty($value) || $value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
     });
 
     $joinedColumns = implode(self::COLUMN_SEPARATOR, $row);
-    $this->commands[] = "({$joinedColumns}),";
+    $this->commands[] = "($joinedColumns),";
   }
 
   private function renderRows(): void
