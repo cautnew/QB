@@ -167,9 +167,15 @@ class INSERT extends QB
 
   private function joinValuesToCommands(array $row): void
   {
-    array_walk($row, function(&$value) {
-      $value = ($value === null) ? 'NULL' : "'{$value}'";
-    });
+    if ($this->indAssoc) {
+      array_walk($row, function(&$value) {
+        $value = ($value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
+      });
+    } else {
+      array_walk($row, function(&$value) {
+        $value = ($value === null) ? 'NULL' : "'{$value}'";
+      });
+    }
 
     $joinedColumns = implode(self::COLUMN_SEPARATOR, $row);
     $this->commands[] = "({$joinedColumns}),";
@@ -199,10 +205,15 @@ class INSERT extends QB
 
     $this->commands[] = 'VALUES';
 
-    if ($this->indAssoc) {
+    /*if ($this->indAssoc) {
       $this->renderRowsAssoc();
     } else {
       $this->renderRowsNormal();
+    }*/
+    foreach($this->pendingRows as $row) {
+      $values = array_values($row);
+
+      $this->joinValuesToCommands($values);
     }
 
     $this->removeCommonsLastCommand();
