@@ -3,7 +3,7 @@
 namespace Cautnew\QB;
 
 use Cautnew\QB\QB;
-use CONDITIONS;
+use Cautnew\QB\CONDITIONS;
 use PDO;
 use Exception;
 
