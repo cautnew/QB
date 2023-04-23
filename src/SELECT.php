@@ -7,7 +7,7 @@ use CONDITIONS;
 use PDO;
 use Exception;
 
-class SELECT implements QB, CONDITIONS
+class SELECT extends QB implements CONDITIONS
 {
   protected $table;
 
@@ -38,6 +38,8 @@ class SELECT implements QB, CONDITIONS
     if (!empty($table)) {
       $this->from($table, $alias);
     }
+
+    parent::__construct();
   }
 
   public function __toString()
