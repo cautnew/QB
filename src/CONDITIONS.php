@@ -1,5 +1,7 @@
 <?php
 
+namespace Cautnew\QB;
+
 interface CONDITIONS {
   public function clearConditions(): self;
 
