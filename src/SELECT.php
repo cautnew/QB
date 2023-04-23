@@ -3,10 +3,11 @@
 namespace Cautnew\QB;
 
 use Cautnew\QB\QB;
+use CONDITIONS;
 use PDO;
 use Exception;
 
-class SELECT extends QB
+class SELECT implements QB, CONDITIONS
 {
   protected $table;
 
