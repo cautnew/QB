@@ -7,6 +7,9 @@ use Cautnew\QB\CONDITIONS;
 use PDO;
 use Exception;
 
+/**
+ * Prepare SELECT commands. You can set all details about the query.
+ */
 class SELECT extends QB implements CONDITIONS
 {
   protected $table;
@@ -33,6 +36,11 @@ class SELECT extends QB implements CONDITIONS
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
+  /**
+   * @param string|null $table
+   * @param string|null $alias
+   * @return SELECT It's possible to render any SELECT command. You can set all details.
+   */
   public function __construct(null | string $table = null, null | string $alias = null)
   {
     if (!empty($table)) {
