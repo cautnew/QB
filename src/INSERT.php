@@ -21,6 +21,8 @@ class INSERT extends QB
 
   protected string $callableOnFlush;
 
+  private bool $indAssoc = false;
+
   protected const COLUMN_SEPARATOR = ',';
 
   public function __construct(null | string $table = null)
@@ -46,13 +48,27 @@ class INSERT extends QB
 
   public function set(string $column, $value): self
   {
+    $this->addColumn($column);
     $this->pendingRow[$column] = $value;
 
-    if (!in_array($column, $this->columns)) {
-      $this->columns[] = $column;
-    }
+    return $this;
+  }
+
+  public function setIndAssoc(bool $indAssoc): self
+  {
+    $this->indAssoc = $indAssoc;
 
     return $this;
+  }
+
+  public function getIndAssoc(): bool
+  {
+    return $this->indAssoc;
+  }
+
+  public function isAssoc(): bool
+  {
+    return $this->getIndAssoc();
   }
 
   public function setColumns(array $columns): self
@@ -60,6 +76,29 @@ class INSERT extends QB
     $this->columns = $columns;
 
     return $this;
+  }
+
+  public function getColumns(): array
+  {
+    return $this->columns;
+  }
+
+  public function addColumn(string $columnName): self
+  {
+    if (empty($columnName)) {
+      throw new Exception("Not valid column name. Empty value passed.");
+    }
+
+    if (!$this->isColumnSet($columnName)) {
+      $this->columns[] = $columnName;
+    }
+
+    return $this;
+  }
+
+  public function isColumnSet(string $columnName): bool
+  {
+    return in_array($columnName, $this->columns);
   }
 
   public function setLimitPendingRows(int $limit): self
@@ -79,6 +118,13 @@ class INSERT extends QB
       $this->flush();
     }
 
+    if ($this->isAssoc()) {
+      $columns = array_keys($row);
+      foreach($columns as $column) {
+        $this->addColumn($column);
+      }
+    }
+
     $this->pendingRows[] = $row;
     $this->numPendingRows += 1;
 
@@ -94,6 +140,31 @@ class INSERT extends QB
     return $this;
   }
 
+  public function clearPendingRow(): self
+  {
+    $this->pendingRow = [];
+
+    return $this;
+  }
+
+  public function clearPendingRows(): self
+  {
+    $this->pendingRows = [];
+    $this->numPendingRows = 0;
+
+    return $this;
+  }
+
+  public function clearRows(): self
+  {
+    $this->clearPendingRow();
+    $this->clearPendingRows();
+
+    $this->numTotalInsertedRows = 0;
+
+    return $this;
+  }
+
   public function prepareRow(): self
   {
     if (empty($this->pendingRow)) {
@@ -101,7 +172,7 @@ class INSERT extends QB
     }
 
     $this->addRow($this->pendingRow);
-    $this->pendingRow = [];
+    $this->clearPendingRow();
 
     return $this;
   }
@@ -111,11 +182,6 @@ class INSERT extends QB
     $this->table = $table;
 
     return $this;
-  }
-
-  public function getColumns(): array
-  {
-    return $this->columns;
   }
 
   public function flush()
@@ -151,14 +217,31 @@ class INSERT extends QB
     $this->commands[] = $columns;
   }
 
-  private function joinValuesToCommands(array $row): void
+  private function joinValuesToCommands(array $values): void
   {
-    array_walk($row, function(&$value) {
+    array_walk($values, function(&$value) {
       $value = (empty($value) || $value === null || $value == "null" || $value == "NULL") ? 'NULL' : $value;
     });
 
-    $joinedColumns = implode(self::COLUMN_SEPARATOR, $row);
+    $joinedColumns = implode(self::COLUMN_SEPARATOR, $values);
+
     $this->commands[] = "($joinedColumns),";
+  }
+
+  private function joinRowToCommands(array $row): void
+  {
+    if (!$this->isAssoc()) {
+      $this->joinValuesToCommands(array_values($row));
+
+      return;
+    }
+
+    $orderedValues = [];
+    foreach($this->columns as $column) {
+      $orderedValues[] = $row[$column] ?? null;
+    }
+
+    $this->joinValuesToCommands($orderedValues);
   }
 
   private function renderRows(): void
@@ -168,9 +251,7 @@ class INSERT extends QB
     $this->commands[] = 'VALUES';
 
     foreach($this->pendingRows as $row) {
-      $values = array_values($row);
-
-      $this->joinValuesToCommands($values);
+      $this->joinRowToCommands($row);
     }
 
     $this->removeCommonsLastCommand();
