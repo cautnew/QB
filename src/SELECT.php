@@ -232,7 +232,7 @@ class SELECT extends QB implements CONDITIONS
     return $this;
   }
 
-  public function join(string $type, $table, string $alias, array $conditions): self
+  public function join(string $type, $table, string $alias, ?array $conditions = null): self
   {
     $type = strtoupper(trim($type));
 
@@ -274,7 +274,7 @@ class SELECT extends QB implements CONDITIONS
 
   public function naturalJoin($table, string $alias): self
   {
-    return $this->join('NATURAL', $table, $alias, null);
+    return $this->join('NATURAL', $table, $alias);
   }
 
   public function removeJoin(string $alias): self
