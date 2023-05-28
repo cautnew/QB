@@ -28,7 +28,6 @@ class SELECT extends QB implements CONDITIONS
   protected ?int $limit;
   protected ?int $offset;
   protected ?array $conditions = [];
-  protected ?array $joins = [];
 
   protected ?int $maxExecutionTime = null;
   
