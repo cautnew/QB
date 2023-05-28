@@ -84,15 +84,17 @@ class UPDATE extends QB
 
   public function from(string $table): self
   {
-    $this->table = $table;
-    $this->indRendered = false;
+    $this->setTableName($table);
 
     return $this;
   }
 
   public function setTableName(string $table): self
   {
-    return $this->from($table);
+    $this->table = $table;
+    $this->indRendered = false;
+
+    return $this;
   }
 
   public function setMaxExecutionTime(int $time): self

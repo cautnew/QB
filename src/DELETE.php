@@ -73,16 +73,26 @@ class DELETE extends QB
 
   public function from(string $table, ?string $alias = null): self
   {
+    $this->setTableName($table);
+    $this->setTableAlias($alias);
+
+    return $this;
+  }
+
+  public function setTableName(string $table): self
+  {
     $this->table = $table;
-    $this->tableAlias = $alias;
     $this->indRendered = false;
 
     return $this;
   }
 
-  public function setTableName(string $table, ?string $alias = null): self
+  public function setTableAlias(?string $tableAlias = null): self
   {
-    return $this->from($table, $alias);
+    $this->tableAlias = $tableAlias;
+    $this->indRendered = false;
+
+    return $this;
   }
 
   public function setMaxExecutionTime(int $time): self

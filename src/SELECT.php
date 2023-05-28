@@ -28,6 +28,7 @@ class SELECT extends QB implements CONDITIONS
   protected ?int $limit;
   protected ?int $offset;
   protected ?array $conditions = [];
+  protected ?array $joins = [];
 
   protected ?int $maxExecutionTime = null;
   
@@ -92,16 +93,26 @@ class SELECT extends QB implements CONDITIONS
 
   public function from(string $table, ?string $alias = null): self
   {
+    $this->setTableName($table);
+    $this->setTableAlias($alias);
+
+    return $this;
+  }
+
+  public function setTableName(string $table): self
+  {
     $this->table = $table;
-    $this->tableAlias = $alias;
     $this->indRendered = false;
 
     return $this;
   }
 
-  public function setTableName(string $table, ?string $alias = null): self
+  public function setTableAlias(?string $tableAlias = null): self
   {
-    return $this->from($table, $alias);
+    $this->tableAlias = $tableAlias;
+    $this->indRendered = false;
+
+    return $this;
   }
 
   public function setDistinct(bool $indDistinct = true): self
@@ -222,7 +233,7 @@ class SELECT extends QB implements CONDITIONS
     return $this;
   }
 
-  public function join(string $type, $table, ?string $alias, ?array $conditions): self
+  public function join(string $type, $table, string $alias, array $conditions): self
   {
     $type = strtoupper(trim($type));
 
@@ -242,27 +253,27 @@ class SELECT extends QB implements CONDITIONS
     return $this;
   }
 
-  public function innerJoin($table, ?string $alias, ?array $conditions): self
+  public function innerJoin($table, string $alias, array $conditions): self
   {
     return $this->join('INNER', $table, $alias, $conditions);
   }
 
-  public function leftJoin($table, ?string $alias, ?array $conditions): self
+  public function leftJoin($table, string $alias, array $conditions): self
   {
     return $this->join('LEFT', $table, $alias, $conditions);
   }
 
-  public function rightJoin($table, ?string $alias, ?array $conditions): self
+  public function rightJoin($table, string $alias, array $conditions): self
   {
     return $this->join('RIGHT', $table, $alias, $conditions);
   }
 
-  public function outterJoin($table, ?string $alias, ?array $conditions): self
+  public function outterJoin($table, string $alias, array $conditions): self
   {
     return $this->join('OUTTER', $table, $alias, $conditions);
   }
 
-  public function naturalJoin($table, ?string $alias): self
+  public function naturalJoin($table, string $alias): self
   {
     return $this->join('NATURAL', $table, $alias, null);
   }
@@ -280,6 +291,13 @@ class SELECT extends QB implements CONDITIONS
   public function clearConditions(): self
   {
     $this->conditions = [];
+
+    return $this;
+  }
+
+  public function clearJoins(): self
+  {
+    $this->joins = [];
 
     return $this;
   }
