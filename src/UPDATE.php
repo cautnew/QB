@@ -20,14 +20,15 @@ class UPDATE extends QB
 
   protected ?int $maxExecutionTime = null;
   
+  const PERMITTED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'OUTTER', 'NATURAL'];
   const PERMITTED_COND_CONNECTORS = ['AND', 'OR'];
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
-  public function __construct(?string $table = null)
+  public function __construct(?string $table = null, ?string $alias = null)
   {
     if (!empty($table)) {
-      $this->from($table);
+      $this->from($table, $alias);
     }
   }
 
@@ -82,9 +83,10 @@ class UPDATE extends QB
     return "{$columnName} IN({$items})";
   }
 
-  public function from(string $table): self
+  public function from(string $table, ?string $alias = null): self
   {
     $this->setTableName($table);
+    $this->setTableAlias($alias);
 
     return $this;
   }
@@ -95,6 +97,32 @@ class UPDATE extends QB
     $this->indRendered = false;
 
     return $this;
+  }
+
+  public function getTableName(): string
+  {
+    if (!isset($this->table)) {
+      $this->setTableName('');
+    }
+
+    return $this->table;
+  }
+
+  public function setTableAlias(?string $tableAlias = null): self
+  {
+    $this->tableAlias = $tableAlias;
+    $this->indRendered = false;
+
+    return $this;
+  }
+
+  public function getTableAlias(): ?string
+  {
+    if (!isset($this->tableAlias)) {
+      $this->setTableAlias();
+    }
+
+    return $this->tableAlias;
   }
 
   public function setMaxExecutionTime(int $time): self
@@ -111,9 +139,64 @@ class UPDATE extends QB
     return $this;
   }
 
-  public function clearConditions(): self
+  public function join(string $type, $table, string $alias, ?array $conditions = null): self
   {
-    $this->conditions = [];
+    $type = strtoupper(trim($type));
+
+    if (!in_array($type, self::PERMITTED_JOIN_TYPES)) {
+      throw new Exception("Join type not recognized.");
+    }
+
+    $this->joins[$alias] = [
+      "type" => $type,
+      "table" => $table,
+      "alias" => $alias,
+      "conditions" => $conditions
+    ];
+
+    $this->indRendered = false;
+
+    return $this;
+  }
+
+  public function innerJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('INNER', $table, $alias, $conditions);
+  }
+
+  public function leftJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('LEFT', $table, $alias, $conditions);
+  }
+
+  public function rightJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('RIGHT', $table, $alias, $conditions);
+  }
+
+  public function outterJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('OUTTER', $table, $alias, $conditions);
+  }
+
+  public function naturalJoin($table, string $alias): self
+  {
+    return $this->join('NATURAL', $table, $alias);
+  }
+
+  public function removeJoin(string $alias): self
+  {
+    if (isset($this->joins[$alias])) {
+      unset($this->joins[$alias]);
+      $this->indRendered = false;
+    }
+
+    return $this;
+  }
+
+  public function clearJoins(): self
+  {
+    $this->joins = [];
 
     return $this;
   }
@@ -189,6 +272,13 @@ class UPDATE extends QB
     return $this->addConditionOr($conditions);
   }
 
+  public function clearConditions(): self
+  {
+    $this->conditions = [];
+
+    return $this;
+  }
+
   public function addSetItem(string $item, string $value): self
   {
     if (empty($item)) {
@@ -235,10 +325,52 @@ class UPDATE extends QB
     return $this;
   }
 
+  private function renderFrom(): void
+  {
+    $this->commands[] = 'FROM';
+
+    if (empty($this->getTableName())) {
+      throw new Exception("Table name is not set.");
+    }
+
+    $this->commands[] = $this->getTableName();
+
+    if ($this->getTableAlias() !== null) {
+      $this->commands[] = $this->getTableAlias();
+    }
+  }
+
+  private function renderJoins(): void
+  {
+    if (empty($this->joins)) {
+      return;
+    }
+
+    foreach ($this->joins as $join) {
+      $this->commands[] = $join["type"] . " JOIN";
+
+      if (gettype($join["table"]) === 'string') {
+        $this->commands[] = $join["table"];
+      } else {
+        $table = $join["table"]->render()->getQuery();
+        $this->commands[] = "({$table})";
+      }
+
+      if (!empty($join["alias"])) {
+        $this->commands[] = $join["alias"];
+      }
+
+      if ($join["type"] != 'NATURAL') {
+        $this->commands[] = 'ON';
+        $this->commands[] = join(' ', $join["conditions"]);
+      }
+    }
+  }
+
   private function renderSetList(): void
   {
     if (empty($this->conditions)) {
-      throw new Exception('Nothing to change.');
+      throw new Exception('You must have a condition to make changes.');
     }
 
     $this->commands[] = 'SET';
@@ -288,9 +420,11 @@ class UPDATE extends QB
 
   public function render(): self
   {
-    $this->commands = ['UPDATE', $this->table];
+    $this->commands = ['UPDATE', $this->getTableName()];
 
     $this->renderSetList();
+    $this->renderFrom();
+    $this->renderJoins();
     $this->renderWhereClause();
     $this->renderOrderByClause();
     $this->renderLimitClause();
