@@ -41,7 +41,7 @@ class SELECT extends QB implements CONDITIONS
    * @param string|null $alias
    * @return SELECT It's possible to render any SELECT command. You can set all details.
    */
-  public function __construct(null | string $table = null, null | string $alias = null)
+  public function __construct(?string $table = null, ?string $alias = null)
   {
     if (!empty($table)) {
       $this->from($table, $alias);
@@ -305,13 +305,6 @@ class SELECT extends QB implements CONDITIONS
     return $this;
   }
 
-  public function clearConditions(): self
-  {
-    $this->conditions = [];
-
-    return $this;
-  }
-
   public function clearJoins(): self
   {
     $this->joins = [];
@@ -388,6 +381,13 @@ class SELECT extends QB implements CONDITIONS
   public function whereOr(array $conditions): self
   {
     return $this->addConditionOr($conditions);
+  }
+
+  public function clearConditions(): self
+  {
+    $this->conditions = [];
+
+    return $this;
   }
 
   public function orderBy(array $listOrderBy): self
@@ -500,11 +500,11 @@ class SELECT extends QB implements CONDITIONS
     $this->commands[] = 'FROM';
 
     if (gettype($this->table) === 'string') {
-      if (empty($this->table)) {
+      if (empty($this->getTableName())) {
         throw new Exception("Table name is not set.");
       }
 
-      $this->commands[] = $this->table;
+      $this->commands[] = $this->getTableName();
     } else {
       $table = $this->table->render()->getQuery();
 
