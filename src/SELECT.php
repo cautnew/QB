@@ -106,12 +106,30 @@ class SELECT extends QB implements CONDITIONS
     return $this;
   }
 
+  public function getTableName(): string
+  {
+    if (!isset($this->table)) {
+      $this->setTableName('');
+    }
+
+    return $this->table;
+  }
+
   public function setTableAlias(?string $tableAlias = null): self
   {
     $this->tableAlias = $tableAlias;
     $this->indRendered = false;
 
     return $this;
+  }
+
+  public function getTableAlias(): ?string
+  {
+    if (!isset($this->tableAlias)) {
+      $this->setTableAlias();
+    }
+
+    return $this->tableAlias;
   }
 
   public function setDistinct(bool $indDistinct = true): self
