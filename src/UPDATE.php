@@ -27,9 +27,7 @@ class UPDATE extends QB
 
   public function __construct(?string $table = null, ?string $alias = null)
   {
-    if (!empty($table)) {
-      $this->from($table, $alias);
-    }
+    $this->from($table, $alias);
   }
 
   public function __set($item, $value)
@@ -93,13 +91,17 @@ class UPDATE extends QB
 
   public function setTableName(string $table): self
   {
+    if (empty($table)) {
+      $this->table = null;
+    }
+
     $this->table = $table;
     $this->indRendered = false;
 
     return $this;
   }
 
-  public function getTableName(): string
+  public function getTableName(): ?string
   {
     if (!isset($this->table)) {
       $this->setTableName('');
@@ -110,6 +112,10 @@ class UPDATE extends QB
 
   public function setTableAlias(?string $tableAlias = null): self
   {
+    if (empty($tableAlias)) {
+      $this->tableAlias = null;
+    }
+
     $this->tableAlias = $tableAlias;
     $this->indRendered = false;
 
@@ -420,11 +426,11 @@ class UPDATE extends QB
 
   public function render(): self
   {
-    $this->commands = ['UPDATE', $this->getTableName()];
+    $this->commands = ['UPDATE', $this->getTableName(), $this->getTableAlias()];
 
-    $this->renderSetList();
     $this->renderFrom();
     $this->renderJoins();
+    $this->renderSetList();
     $this->renderWhereClause();
     $this->renderOrderByClause();
     $this->renderLimitClause();
