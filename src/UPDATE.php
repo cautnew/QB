@@ -331,21 +331,6 @@ class UPDATE extends QB
     return $this;
   }
 
-  private function renderFrom(): void
-  {
-    $this->commands[] = 'FROM';
-
-    if (empty($this->getTableName())) {
-      throw new Exception("Table name is not set.");
-    }
-
-    $this->commands[] = $this->getTableName();
-
-    if ($this->getTableAlias() !== null) {
-      $this->commands[] = $this->getTableAlias();
-    }
-  }
-
   private function renderJoins(): void
   {
     if (empty($this->joins)) {
@@ -428,7 +413,6 @@ class UPDATE extends QB
   {
     $this->commands = ['UPDATE', $this->getTableName(), $this->getTableAlias()];
 
-    $this->renderFrom();
     $this->renderJoins();
     $this->renderSetList();
     $this->renderWhereClause();
