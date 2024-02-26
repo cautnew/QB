@@ -1,6 +1,6 @@
 {
   "name": "cautnew/qb",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Class to create SQL queries in a easy way",
   "type": "library",
   "license": "MIT",

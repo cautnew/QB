@@ -3,7 +3,6 @@
 namespace Cautnew\QB;
 
 use Cautnew\QB\QB;
-use PDO;
 use Exception;
 
 class DELETE extends QB
@@ -98,7 +97,7 @@ class DELETE extends QB
   public function setMaxExecutionTime(int $time): self
   {
     if ($time < 0) {
-      throw new Exception("Invalid time. \$time must be an int igual or greater then 0 in milliseconds.");
+      throw new Exception("Invalid time. \$time must be an int equals or greater then 0 in milliseconds.");
     } elseif ($time == 0) {
       $this->maxExecutionTime = null;
       return $this;
@@ -107,50 +106,6 @@ class DELETE extends QB
     $this->maxExecutionTime = $time;
 
     return $this;
-  }
-
-  public function join(string $type, $table, ?string $alias): self
-  {
-    $type = strtoupper(trim($type));
-
-    if (!in_array($type, self::PERMITTED_JOIN_TYPES)) {
-      throw new Exception("Join type not recognized.");
-    }
-
-    $this->joins[$alias] = [
-      "type" => $type,
-      "table" => $table,
-      "alias" => $alias
-    ];
-
-    $this->indRendered = false;
-
-    return $this;
-  }
-
-  public function innerJoin($table, ?string $alias): self
-  {
-    return $this->join('INNER', $table, $alias);
-  }
-
-  public function leftJoin($table, ?string $alias): self
-  {
-    return $this->join('LEFT', $table, $alias);
-  }
-
-  public function rightJoin($table, ?string $alias): self
-  {
-    return $this->join('RIGHT', $table, $alias);
-  }
-
-  public function outterJoin($table, ?string $alias): self
-  {
-    return $this->join('OUTTER', $table, $alias);
-  }
-
-  public function naturalJoin($table, ?string $alias): self
-  {
-    return $this->join('NATURAL', $table, $alias, null);
   }
 
   public function removeJoin(string $alias): self
