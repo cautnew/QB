@@ -17,12 +17,10 @@ class SELECT extends QB
   private array $columnsAliases = [];
   private array $columnsOrder = [];
   private array $columnsGroup = [];
-  private array $joins = [];
   private CONDITION $condition;
   private int $limit = 0;
   private int $offset = 0;
 
-  private bool $indRendered = false;
   protected bool $indDistinct = false;
 
   const PERMITTED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'OUTTER', 'NATURAL'];
