@@ -18,8 +18,8 @@ class SELECT extends QB
   private array $columnsOrder = [];
   private array $columnsGroup = [];
   private CONDITION $condition;
-  private int $limit;
-  private int $offset;
+  private int $limit = 0;
+  private int $offset = 0;
 
   public function __construct(string $table, string $alias = "")
   {
@@ -52,6 +52,14 @@ class SELECT extends QB
 
     if (isset($this->condition)) {
       $query .= " WHERE " . $this->condition;
+    }
+
+    if ($this->limit > 0) {
+      $query .= " LIMIT " . $this->limit;
+    }
+
+    if ($this->offset > 0) {
+      $query .= " OFFSET " . $this->offset;
     }
 
     return $query;
