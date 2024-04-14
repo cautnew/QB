@@ -78,13 +78,13 @@ class SELECT extends QB
     $query .= $this->getColumns();
 
     if (!empty($this->alias)) {
-      $query .= " FROM " . $this->getTableName() . " AS " . $this->getTableAlias();
+      $query .= "\nFROM " . $this->getTableName() . " AS " . $this->getTableAlias();
     } else {
-      $query .= " FROM " . $this->getTableName();
+      $query .= "\nFROM " . $this->getTableName();
     }
 
     foreach ($this->joins as $join) {
-      $query .= ' ' . $join["type"] . " JOIN";
+      $query .= "\n" . $join["type"] . " JOIN";
 
       if (gettype($join["table"]) === 'string') {
         $query .= ' ' . $join["table"];
@@ -94,25 +94,24 @@ class SELECT extends QB
       }
 
       if (!empty($join["alias"])) {
-        $query .= ' ' . $join["alias"];
+        $query .= ' AS ' . $join["alias"];
       }
 
       if ($join["type"] != 'NATURAL') {
-        $query .= ' ON ';
-        $query .= join(' ', $join["conditions"]);
+        $query .= "\nON " . $join["conditions"];
       }
     }
 
     if (isset($this->condition)) {
-      $query .= " WHERE " . $this->condition;
+      $query .= "\nWHERE " . $this->condition;
     }
 
     if ($this->limit > 0) {
-      $query .= " LIMIT " . $this->limit;
+      $query .= "\nLIMIT " . $this->limit;
     }
 
     if ($this->offset > 0) {
-      $query .= " OFFSET " . $this->offset;
+      $query .= "\nOFFSET " . $this->offset;
     }
 
     return $query;
