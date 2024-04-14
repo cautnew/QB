@@ -17,9 +17,17 @@ class SELECT extends QB
   private array $columnsAliases = [];
   private array $columnsOrder = [];
   private array $columnsGroup = [];
+  private array $joins = [];
   private CONDITION $condition;
   private int $limit = 0;
   private int $offset = 0;
+
+  private bool $indRendered = false;
+  protected bool $indDistinct = false;
+
+  const PERMITTED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'OUTTER', 'NATURAL'];
+  const CONDITION_IN_LIMIT_ITEMS = 1000;
+  const CONDITION_IN_SEPARATOR = ',';
 
   public function __construct(string $table, string $alias = "")
   {
@@ -35,6 +43,33 @@ class SELECT extends QB
     return $this->render();
   }
 
+  private function renderJoins(): void
+  {
+    if (empty($this->joins)) {
+      return;
+    }
+
+    foreach ($this->joins as $join) {
+      $this->commands[] = $join["type"] . " JOIN";
+
+      if (gettype($join["table"]) === 'string') {
+        $this->commands[] = $join["table"];
+      } else {
+        $table = $join["table"]->render()->getQuery();
+        $this->commands[] = "({$table})";
+      }
+
+      if (!empty($join["alias"])) {
+        $this->commands[] = $join["alias"];
+      }
+
+      if ($join["type"] != 'NATURAL') {
+        $this->commands[] = 'ON';
+        $this->commands[] = join(' ', $join["conditions"]);
+      }
+    }
+  }
+
   private function render(): string
   {
     if (empty($this->table)) {
@@ -48,6 +83,26 @@ class SELECT extends QB
       $query .= " FROM " . $this->getTableName() . " AS " . $this->getTableAlias();
     } else {
       $query .= " FROM " . $this->getTableName();
+    }
+
+    foreach ($this->joins as $join) {
+      $query .= ' ' . $join["type"] . " JOIN";
+
+      if (gettype($join["table"]) === 'string') {
+        $query .= ' ' . $join["table"];
+      } else {
+        $table = $join["table"]->render()->getQuery();
+        $query .= " ({$table})";
+      }
+
+      if (!empty($join["alias"])) {
+        $query .= ' ' . $join["alias"];
+      }
+
+      if ($join["type"] != 'NATURAL') {
+        $query .= ' ON ';
+        $query .= join(' ', $join["conditions"]);
+      }
     }
 
     if (isset($this->condition)) {
@@ -154,6 +209,58 @@ class SELECT extends QB
   public function offset(int $offset): self
   {
     $this->offset = $offset;
+
+    return $this;
+  }
+
+  public function join(string $type, $table, string $alias, ?array $conditions = null): self
+  {
+    $type = strtoupper(trim($type));
+
+    if (!in_array($type, self::PERMITTED_JOIN_TYPES)) {
+      throw new Exception("Join type not recognized.");
+    }
+
+    $this->joins[$alias] = [
+      "type" => $type,
+      "table" => $table,
+      "alias" => $alias,
+      "conditions" => $conditions
+    ];
+
+    $this->indRendered = false;
+
+    return $this;
+  }
+
+  public function innerJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('INNER', $table, $alias, $conditions);
+  }
+
+  public function leftJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('LEFT', $table, $alias, $conditions);
+  }
+
+  public function rightJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('RIGHT', $table, $alias, $conditions);
+  }
+
+  public function outterJoin($table, string $alias, array $conditions): self
+  {
+    return $this->join('OUTTER', $table, $alias, $conditions);
+  }
+
+  public function naturalJoin($table, string $alias): self
+  {
+    return $this->join('NATURAL', $table, $alias);
+  }
+
+  public function clearJoins(): self
+  {
+    $this->joins = [];
 
     return $this;
   }
