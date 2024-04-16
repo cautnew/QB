@@ -210,7 +210,7 @@ class SELECT extends QB
     return $this;
   }
 
-  public function join(string $type, $table, string $alias, ?array $conditions = null): self
+  public function join(string $type, $table, string $alias, ?CONDITION $conditions = null): self
   {
     $type = strtoupper(trim($type));
 
@@ -230,22 +230,22 @@ class SELECT extends QB
     return $this;
   }
 
-  public function innerJoin($table, string $alias, array $conditions): self
+  public function innerJoin($table, string $alias, CONDITION $conditions): self
   {
     return $this->join('INNER', $table, $alias, $conditions);
   }
 
-  public function leftJoin($table, string $alias, array $conditions): self
+  public function leftJoin($table, string $alias, CONDITION $conditions): self
   {
     return $this->join('LEFT', $table, $alias, $conditions);
   }
 
-  public function rightJoin($table, string $alias, array $conditions): self
+  public function rightJoin($table, string $alias, CONDITION $conditions): self
   {
     return $this->join('RIGHT', $table, $alias, $conditions);
   }
 
-  public function outterJoin($table, string $alias, array $conditions): self
+  public function outterJoin($table, string $alias, CONDITION $conditions): self
   {
     return $this->join('OUTTER', $table, $alias, $conditions);
   }
