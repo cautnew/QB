@@ -280,7 +280,7 @@ class DELETE extends QB
 
   public function render(): self
   {
-    $this->commands = ['DELETE', $this->table];
+    $this->commands = ['DELETE FROM', $this->table];
 
     $this->renderJoins();
     $this->renderWhereClause();
