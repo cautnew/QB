@@ -17,13 +17,13 @@ class DELETE extends QB
   protected ?array $conditions = [];
 
   protected ?int $maxExecutionTime = null;
-  
+
   const PERMITTED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'OUTTER', 'NATURAL'];
   const PERMITTED_COND_CONNECTORS = ['AND', 'OR'];
   const CONDITION_IN_LIMIT_ITEMS = 1000;
   const CONDITION_IN_SEPARATOR = ',';
 
-  public function __construct(null | string $table = null, null | string $alias = null)
+  public function __construct(null|string $table = null, null|string $alias = null)
   {
     if (!empty($table)) {
       $this->from($table, $alias);
@@ -44,14 +44,14 @@ class DELETE extends QB
     return "{$columnName} BETWEEN {$valueFrom} AND {$valueTo}";
   }
 
-  public static function whereIn(string $columnName, array $values, int $limitItemsConditionIn=self::CONDITION_IN_LIMIT_ITEMS): string
+  public static function whereIn(string $columnName, array $values, int $limitItemsConditionIn = self::CONDITION_IN_LIMIT_ITEMS): string
   {
     if (empty($columnName) || empty($values)) {
       return '';
     }
 
     $qtdItems = count($values);
-    
+
     if ($qtdItems > $limitItemsConditionIn) {
       $itemAtual = 0;
       $valReturn = '(';

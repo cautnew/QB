@@ -1,2 +1,3 @@
 # QB
-SQL Query Builder em PHP
+
+SQL Query Builder in PHP
