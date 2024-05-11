@@ -235,6 +235,12 @@ class SELECT extends QB
     return $this->join('INNER', $table, $alias, $conditions);
   }
 
+  /**
+   * Add a left join relationship to the query.
+   * @param string $table The table to join.
+   * @param string $alias The alias of the table.
+   * @param CONDITION $conditions The conditions to join the tables.
+   */
   public function leftJoin($table, string $alias, CONDITION $conditions): self
   {
     return $this->join('LEFT', $table, $alias, $conditions);
